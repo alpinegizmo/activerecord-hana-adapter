@@ -32,14 +32,18 @@ module ActiveRecord
         end
 
         # === Executing ============================ #
-
+      
+        def map_column_name(col)
+          lowercase_schema_reflection ? col.name.downcase : col.name
+        end
+      
         def exec_query(sql, name = nil, binds = [])
           log(sql, name, binds) do
       
             # Don't cache statements without bind values
             if binds.empty?
               stmt = @connection.run(sql)
-              cols = stmt.columns(true).map { |c| c.name }
+              cols = stmt.columns(true).map { |c| map_column_name(c) }
               records = stmt.fetch_all || []
               stmt.drop
               stmt = records
@@ -47,7 +51,7 @@ module ActiveRecord
               # without statement caching
               args = bind_params(sql,binds)
               stmt = @connection.run(*args)
-              cols = stmt.columns(true).map { |c| c.name }
+              cols = stmt.columns(true).map { |c| map_column_name(c) }
               records = stmt.fetch_all || []
               stmt.drop
               stmt = records

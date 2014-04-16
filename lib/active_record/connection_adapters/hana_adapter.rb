@@ -44,7 +44,9 @@ module ActiveRecord
       include Hana::DatabaseStatements
       include Hana::SchemaStatements
       include Hana::Quoting
-    
+
+      cattr_accessor :lowercase_schema_reflection
+              
       def initialize(connection, logger, pool, config)
         super(connection, logger, pool)
               

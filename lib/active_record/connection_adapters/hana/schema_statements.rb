@@ -58,7 +58,7 @@ module ActiveRecord
         end
 
         def table_structure(table_name)
-          returning structure = select_rows("SELECT COLUMN_NAME, DEFAULT_VALUE, DATA_TYPE_NAME, IS_NULLABLE FROM TABLE_COLUMNS WHERE SCHEMA_NAME=\'#{@connection_options[:database]}\' AND TABLE_NAME=\'#{table_name}\'") do
+          returning structure = select_rows("SELECT #{lowercase_schema_reflection_sql('COLUMN_NAME')}, DEFAULT_VALUE, DATA_TYPE_NAME, IS_NULLABLE FROM TABLE_COLUMNS WHERE SCHEMA_NAME=\'#{@connection_options[:database]}\' AND TABLE_NAME=\'#{table_name}\'") do
             raise(ActiveRecord::StatementInvalid, "Could not find table '#{table_name}'") if structure.empty?
           end
         end
@@ -283,7 +283,12 @@ module ActiveRecord
         # === Utils ====================================== #
 
         def quote_column_name(name)
-          %("#{name.to_s.gsub('"', '""')}")
+          column_name = lowercase_schema_reflection ? name.upcase : name
+          %("#{column_name.to_s.gsub('"', '""')}")
+        end
+
+        def lowercase_schema_reflection_sql(node)
+          lowercase_schema_reflection ? "LOWER(#{node})" : node
         end
 
       end
